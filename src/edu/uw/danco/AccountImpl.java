@@ -42,7 +42,7 @@ public class AccountImpl implements Account {
     private byte[] passwordHash;
 
     /** The account manager */
-    private AccountManager accountManager = null;
+    private AccountManager accountManager;
 
     /**
      * Default constructor for bean support

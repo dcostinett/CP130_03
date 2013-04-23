@@ -25,6 +25,8 @@ public class AccountManagerImpl implements AccountManager {
     /** The data access object */
     private final AccountDao dao;
 
+    /** The account factory */
+    private final AccountFactory accountFactory;
 
     /**
      * Instatiates a new AccountManager
@@ -32,6 +34,8 @@ public class AccountManagerImpl implements AccountManager {
      */
     public AccountManagerImpl(final AccountDao dao) {
         this.dao = dao;
+
+        accountFactory = new AccountFactoryImpl();
     }
 
     /**
@@ -39,6 +43,8 @@ public class AccountManagerImpl implements AccountManager {
      */
     public AccountManagerImpl() {
         this.dao = new AccountDaoImpl();
+
+        accountFactory = new AccountFactoryImpl();
     }
 
     /**
@@ -59,7 +65,13 @@ public class AccountManagerImpl implements AccountManager {
      */
     @Override
     public Account getAccount(final String accountName) throws AccountException {
-        return dao.getAccount(accountName);
+        Account account = dao.getAccount(accountName);
+
+        if (account != null) {
+            account.registerAccountManager(this);
+        }
+
+        return account;
     }
 
     /**
@@ -92,8 +104,8 @@ public class AccountManagerImpl implements AccountManager {
             MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(password.getBytes());
 
-            AccountFactory accountFactory = new AccountFactoryImpl();
             account = accountFactory.newAccount(accountName, md.digest(), balance);
+            account.registerAccountManager(this);
             dao.setAccount(account);
         } catch (NoSuchAlgorithmException e) {
             LOGGER.log(Level.SEVERE, "Unable to create SHA1 hash for password", e);
@@ -114,14 +126,16 @@ public class AccountManagerImpl implements AccountManager {
         boolean isPasswordMatch = false;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
-            md.update(password.getBytes());
+            md.update(password.getBytes());                     // in general use the getBytes method that takes an encoding type
 
             Account account = dao.getAccount(accountName);
             if (account != null) {
                 isPasswordMatch = Arrays.equals(account.getPasswordHash(), (md.digest()));
+                //MessageDigest has an isEquals method
             }
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Unable to crete message digest for password", e);
+            throw new AccountException(e.getMessage());
         }
         return isPasswordMatch;
     }

@@ -33,39 +33,41 @@ public class AccountDaoImpl implements AccountDao {
     /** The SQL used to lookup an account in the mysql DB */
     private static final String ACCOUNT_LOOKUP_SQL =
             "SELECT password_hash, balance, fullname, phone, email,"
-            + "       street, city, state, zip,"
-            + "       card_number, issuer, cardtype, holder, expires"
-            + "  FROM account"
-            + " WHERE account_name = ?";
+                    + "       street, city, state, zip,"
+                    + "       card_number, issuer, cardtype, holder, expires"
+                    + "  FROM account"
+                    + " WHERE account_name = ?";
 
 
     /** The SQL used to update an account in the mysql DB */
     private static final String ACCOUNT_UPDATE_SQL =
             "INSERT INTO account"
-            + " ( account_name, password_hash, balance, fullname, phone, email,"
-            + "   street, city, state, zip,"
-            + "   card_number, issuer, cardtype, holder, expires )"
-            + " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) "
-            + " ON DUPLICATE KEY UPDATE"
-            + "   password_hash=VALUES(password_hash), "
-            + "   balance=VALUES(balance), "
-            + "   fullname=VALUES(fullname), "
-            + "   phone=VALUES(phone), "
-            + "   email=VALUES(email), "
-            + "   street=VALUES(street), "
-            + "   city=VALUES(city), "
-            + "   state=VALUES(state), "
-            + "   zip=VALUES(zip), "
-            + "   card_number=VALUES(card_number), "
-            + "   issuer=VALUES(issuer), "
-            + "   cardtype=VALUES(cardtype), "
-            + "   holder=VALUES(holder), "
-            + "   expires=VALUES(expires) ";
+                    + " ( account_name, password_hash, balance, fullname, phone, email,"
+                    + "   street, city, state, zip,"
+                    + "   card_number, issuer, cardtype, holder, expires )"
+                    + " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) "
+                    + " ON DUPLICATE KEY UPDATE"
+                    + "   password_hash=VALUES(password_hash), "
+                    + "   balance=VALUES(balance), "
+                    + "   fullname=VALUES(fullname), "
+                    + "   phone=VALUES(phone), "
+                    + "   email=VALUES(email), "
+                    + "   street=VALUES(street), "
+                    + "   city=VALUES(city), "
+                    + "   state=VALUES(state), "
+                    + "   zip=VALUES(zip), "
+                    + "   card_number=VALUES(card_number), "
+                    + "   issuer=VALUES(issuer), "
+                    + "   cardtype=VALUES(cardtype), "
+                    + "   holder=VALUES(holder), "
+                    + "   expires=VALUES(expires) ";
+
+    //create references to the SQL PreparedStatement parameters
 
     /** The SQL used to delete an account from the mysql DB */
     private static final String ACCOUNT_DELETE_SQL =
             "DELETE from account "
-            + " WHERE account_name = ?";
+                    + " WHERE account_name = ?";
 
 
     /** THe SQL used to delete all the accounts */
@@ -74,6 +76,9 @@ public class AccountDaoImpl implements AccountDao {
 
     /** The logger */
     private static final Logger LOGGER = Logger.getLogger(AccountDaoImpl.class.getName());
+
+    /** THe name of the db to connect to */
+    private static final String JDBC_ACCOUNT_DB = "jdbc/AccountDb";
 
     /** THe connection to the data store */
     private Connection conn = null;
@@ -96,12 +101,8 @@ public class AccountDaoImpl implements AccountDao {
      */
     public AccountDaoImpl() {
         try {
-            Hashtable<String, String> ht = new Hashtable<String, String>();
-            ht.put( Context.INITIAL_CONTEXT_FACTORY,
-                          "edu.uw.ext.naming.LocalInMemoryContextFactory" );
-            ht.put( Context.PROVIDER_URL, "namespace.xml" );
-            Context ctx = new InitialContext(ht);
-            DataSource ds = (DataSource)ctx.lookup("jdbc/AccountDb");
+            Context ctx = new InitialContext();
+            DataSource ds = (DataSource)ctx.lookup(JDBC_ACCOUNT_DB);
             ctx.close();
 
             try {
@@ -142,7 +143,8 @@ public class AccountDaoImpl implements AccountDao {
                 account.setPhone(rs.getString(4));
                 account.setEmail(rs.getString(5));
 
-                Address address = new AddressImpl();
+                Address address = new AddressImpl();            //should be able to use beanfactory to create the
+                // Address
                 address.setStreetAddress(rs.getString(6));
                 address.setCity(rs.getString(7));
                 address.setState(rs.getString(8));
@@ -163,7 +165,9 @@ public class AccountDaoImpl implements AccountDao {
             LOGGER.log(Level.SEVERE, "Unable to set accountname to: " + accountName, e);
         } finally {
             try {
-                rs.close();
+                if (rs != null) {
+                    rs.close();
+                }
             } catch (SQLException e) {
                 LOGGER.log(Level.SEVERE, "Unable to close ResultSet", e);
             }
@@ -199,7 +203,7 @@ public class AccountDaoImpl implements AccountDao {
                 updateAccountPs.setString(9, addr.getState());
                 updateAccountPs.setString(10, addr.getZipCode());
             } else {
-                updateAccountPs.setString(7, EMPTY_STRING);
+                updateAccountPs.setString(7, EMPTY_STRING); // prefer to use setNull for these; also create references to the column indexes rather than magic numbers
                 updateAccountPs.setString(8, EMPTY_STRING);
                 updateAccountPs.setString(9, EMPTY_STRING);
                 updateAccountPs.setString(10, EMPTY_STRING);
@@ -267,9 +271,13 @@ public class AccountDaoImpl implements AccountDao {
     public void close() throws AccountException {
         try {
             // prepared statements should automatically get closed by closing the connection.
-            conn.close();
+            if (conn != null) {
+                conn.close();
+            }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Unable to close connection to DB", e);
+        } finally {
+            conn = null;
         }
     }
 }
