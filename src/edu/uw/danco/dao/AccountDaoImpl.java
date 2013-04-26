@@ -1,5 +1,8 @@
-package edu.uw.danco;
+package edu.uw.danco.dao;
 
+import edu.uw.danco.account.AccountImpl;
+import edu.uw.danco.account.AddressImpl;
+import edu.uw.danco.account.CreditCardImpl;
 import edu.uw.ext.framework.account.Account;
 import edu.uw.ext.framework.account.AccountException;
 import edu.uw.ext.framework.account.Address;
@@ -14,7 +17,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

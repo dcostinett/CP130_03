@@ -1,4 +1,4 @@
-package edu.uw.danco;
+package edu.uw.danco.dao;
 
 import edu.uw.ext.framework.dao.AccountDao;
 import edu.uw.ext.framework.dao.DaoFactory;
@@ -7,10 +7,10 @@ import edu.uw.ext.framework.dao.DaoFactoryException;
 /**
  * Created with IntelliJ IDEA.
  * User: dcostinett
- * Date: 4/16/13
- * Time: 8:46 PM
+ * Date: 4/23/13
+ * Time: 9:20 PM
  */
-public class AccountDaoFactoryImpl implements DaoFactory {
+public class FileAccountDaoFactoryImpl implements DaoFactory {
 
     /**
      * Instantiates a new AccountDao object.
@@ -19,7 +19,7 @@ public class AccountDaoFactoryImpl implements DaoFactory {
      */
     @Override
     public AccountDao getAccountDao() throws DaoFactoryException {
-        AccountDao accountDao = new AccountDaoImpl();
-        return accountDao;
+        FileAccountDaoImpl fileAccountDao = new FileAccountDaoImpl();
+        return fileAccountDao;
     }
 }
