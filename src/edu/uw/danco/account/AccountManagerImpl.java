@@ -23,6 +23,9 @@ public class AccountManagerImpl implements AccountManager {
 
     private static final Logger LOGGER = Logger.getLogger(AccountManagerImpl.class.getName());
 
+    /** THe hashing algorithm */
+    public static final String ALGORITHM = "SHA1";
+
     /** The data access object */
     private final AccountDao dao;
 
@@ -102,7 +105,7 @@ public class AccountManagerImpl implements AccountManager {
             throw new AccountException(String.format("Account %s already exists", accountName));
         }
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA1");
+            MessageDigest md = MessageDigest.getInstance(ALGORITHM);
             md.update(password.getBytes());
 
             account = accountFactory.newAccount(accountName, md.digest(), balance);
@@ -126,7 +129,7 @@ public class AccountManagerImpl implements AccountManager {
     public boolean validateLogin(final String accountName, final String password) throws AccountException {
         boolean isPasswordMatch = false;
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA1");
+            MessageDigest md = MessageDigest.getInstance(ALGORITHM);
             md.update(password.getBytes());                     // in general use the getBytes method that takes an encoding type
 
             Account account = dao.getAccount(accountName);
