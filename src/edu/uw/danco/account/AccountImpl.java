@@ -3,6 +3,7 @@ package edu.uw.danco.account;
 import edu.uw.ext.framework.account.*;
 import edu.uw.ext.framework.order.Order;
 
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -16,6 +17,20 @@ import java.util.prefs.Preferences;
 public class AccountImpl implements Account {
     /** The logger */
     private static final Logger LOGGER = Logger.getLogger(AccountImpl.class.getName());
+
+    /** The minimum allowed account length */
+    private static int minAcctLen;
+
+    /** The minimum allowed initial account balance */
+    private static int minAcctBal;
+
+    static {
+        final Preferences prefs = Preferences.userNodeForPackage(Account.class);
+        minAcctLen = prefs.getInt("minAccountLength", 0);
+        minAcctBal = prefs.getInt("minAccountBalance", 0);
+        LOGGER.info("minAccountLength " + minAcctLen);
+        LOGGER.info("minAccountBalance " + minAcctBal);
+    }
 
     /** Name of account holder */
     private String name;
@@ -52,6 +67,42 @@ public class AccountImpl implements Account {
 
 
     /**
+     * Constructor, validates length of account name and the balance based on
+     * the preferences.
+     *
+     * @param acctName the account name
+     * @param passwordHash the password hash
+     * @param balance the balance
+     *
+     * @throws AccountException if the account name is too short or balance
+     *                          too low
+     */
+    public AccountImpl(final String acctName, final byte[] passwordHash,
+                         final int balance)
+            throws AccountException {
+        if (!editAccountName(acctName)) {
+            final String msg = "Account creation failed for , account '" + acctName
+                                       + "' invalid account name";
+            LOGGER.warning(msg);
+            throw new AccountException(msg);
+        }
+
+        if (balance < minAcctBal) {
+            final String msg = "Account creation failed for , account '" + acctName
+                                       + "' minimum balance not met, " + balance;
+            LOGGER.warning(msg);
+            throw new AccountException(msg);
+        }
+
+        name = acctName;
+        final byte[] copy = new byte[passwordHash.length];
+        System.arraycopy(passwordHash, 0, copy, 0, passwordHash.length);
+        this.passwordHash = copy;
+        this.balance = balance;
+    }
+
+
+    /**
      * Gets the account name
      * @return - the name of the account
      */
@@ -68,13 +119,26 @@ public class AccountImpl implements Account {
      */
     @Override
     public void setName(final String name) throws AccountException {
-        Preferences prefs = Preferences.userNodeForPackage(Account.class);
-        if (name.length() < prefs.getInt("minAccountLength", 8)) {
-            throw new AccountException("Account name too short: " + name);
+        if (!editAccountName(name)) {
+            final String msg = "Account name '" + name + "' is unacceptable.";
+            LOGGER.warning(msg);
+            throw new AccountException(msg);
         }
+
         this.name = name;
     }
 
+
+    /**
+     * Edits the account name.
+     *
+     * @param acctName the value to be edited
+     *
+     * @return true if the provided value is acceptable
+     */
+    private boolean editAccountName(final String acctName) {
+        return (acctName != null) && (acctName.length() >= minAcctLen);
+    }
 
     /**
      * Gets the hashed password.
@@ -264,11 +328,28 @@ public class AccountImpl implements Account {
      */
     @Override
     public void reflectOrder(Order order, int executionPrice) {
-        if (order.isBuyOrder()) {
-            balance -= order.valueOfOrder(executionPrice);
-        }
-        else {
+        try {
             balance += order.valueOfOrder(executionPrice);
+            if (accountManager != null) {
+                accountManager.persist(this);
+            } else {
+                LOGGER.log(Level.SEVERE, "Account manager has not been initialized.",
+                                  new Exception());
+            }
+        } catch (final AccountException ex) {
+            LOGGER.log(Level.SEVERE, "Failed to persist account " + name
+                                             + " after adjusting for order.", ex);
         }
+    }
+
+
+    @Override
+    public String toString() {
+        return "name=" + name + "\n" +
+               "balance=" + balance + "\n" +
+               "fullName=" + fullName + "\n" +
+               "phone=" + phone + "\n" +
+               "email=" + email + "\n" +
+               "passwordHash=" + Arrays.toString(passwordHash) + "\n";
     }
 }

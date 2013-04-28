@@ -123,4 +123,17 @@ public class CreditCardImpl implements CreditCard {
     public void setExpirationDate(final String expDate) {
         this.expirationDate = expDate == null ? "" : expDate;
     }
+
+    /**
+     * A string representation of the Credit Card
+     * @return - a string representing the stored data
+     */
+    @Override
+    public String toString() {
+        return "issuer=" + issuer + "\n" +
+               "type=" + type + "\n" +
+               "holder=" + holder + "\n" +
+               "accountNumber=" + accountNumber + "\n" +
+               "expirationDate=" + expirationDate + "\n";
+    }
 }
