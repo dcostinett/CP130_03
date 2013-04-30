@@ -20,11 +20,7 @@ import java.util.logging.Logger;
  */
 public class AccountManagerImpl implements AccountManager {
 
-    /** The logger */
     private static final Logger LOGGER = Logger.getLogger(AccountManagerImpl.class.getName());
-
-    /** THe algorithm to use for password hashing */
-    public static final String ALGORITHM = "SHA1";
 
     /** The data access object */
     private final AccountDao dao;
@@ -32,7 +28,7 @@ public class AccountManagerImpl implements AccountManager {
 
     /**
      * Instatiates a new AccountManager
-     * @param dao - the DataAccessObject for an account
+     * @param dao
      */
     public AccountManagerImpl(final AccountDao dao) {
         this.dao = dao;
@@ -93,7 +89,7 @@ public class AccountManagerImpl implements AccountManager {
             throw new AccountException(String.format("Account %s already exists", accountName));
         }
         try {
-            MessageDigest md = MessageDigest.getInstance(ALGORITHM);
+            MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(password.getBytes());
 
             AccountFactory accountFactory = new AccountFactoryImpl();
@@ -117,7 +113,7 @@ public class AccountManagerImpl implements AccountManager {
     public boolean validateLogin(final String accountName, final String password) throws AccountException {
         boolean isPasswordMatch = false;
         try {
-            MessageDigest md = MessageDigest.getInstance(ALGORITHM);
+            MessageDigest md = MessageDigest.getInstance("SHA1");
             md.update(password.getBytes());
 
             Account account = dao.getAccount(accountName);

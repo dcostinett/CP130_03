@@ -1,4 +1,4 @@
-package edu.uw.danco;
+package edu.uw.danco.account;
 
 import edu.uw.ext.framework.account.CreditCard;
 
@@ -122,5 +122,18 @@ public class CreditCardImpl implements CreditCard {
     @Override
     public void setExpirationDate(final String expDate) {
         this.expirationDate = expDate == null ? "" : expDate;
+    }
+
+    /**
+     * A string representation of the Credit Card
+     * @return - a string representing the stored data
+     */
+    @Override
+    public String toString() {
+        return "issuer=" + issuer + "\n" +
+               "type=" + type + "\n" +
+               "holder=" + holder + "\n" +
+               "accountNumber=" + accountNumber + "\n" +
+               "expirationDate=" + expirationDate + "\n";
     }
 }

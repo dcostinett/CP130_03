@@ -1,4 +1,4 @@
-package edu.uw.danco;
+package edu.uw.danco.account;
 
 import edu.uw.ext.framework.account.Account;
 import edu.uw.ext.framework.account.AccountException;
