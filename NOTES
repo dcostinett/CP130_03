@@ -1,0 +1,5 @@
+Use utility method to write length of data and then the data - see the DataOutputStream for the method
+Use properties for Address and CC objects
+
+Account file needs to be a binary file
+Properties method is pretty easy for the address and cc objects.

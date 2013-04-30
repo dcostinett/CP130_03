@@ -333,8 +333,7 @@ public class AccountImpl implements Account {
             if (accountManager != null) {
                 accountManager.persist(this);
             } else {
-                LOGGER.log(Level.SEVERE, "Account manager has not been initialized.",
-                                  new Exception());
+                LOGGER.log(Level.SEVERE, "Account manager has not been initialized.");
             }
         } catch (final AccountException ex) {
             LOGGER.log(Level.SEVERE, "Failed to persist account " + name
