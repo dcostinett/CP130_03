@@ -1,5 +1,6 @@
-package edu.uw.danco;
+package edu.uw.danco.account;
 
+import edu.uw.danco.dao.AccountDaoImpl;
 import edu.uw.ext.framework.account.Account;
 import edu.uw.ext.framework.account.AccountException;
 import edu.uw.ext.framework.account.AccountFactory;
