@@ -112,11 +112,14 @@ public class FileAccountDaoImpl implements AccountDao {
                     zin.closeEntry();
 
                     Properties props = new Properties();
-                    props.load(new FileInputStream(f));
+
+                    //need to fix up account for binary I/O
                     if (name.equalsIgnoreCase(ACCOUNT)) {
                         updateAccount(acct, props);
                         continue;
                     }
+
+                    props.load(new FileInputStream(f));
                     if (name.equalsIgnoreCase(ADDRESS)) {
                         updateAccountAddress(acct, props);
                         continue;
@@ -251,8 +254,11 @@ public class FileAccountDaoImpl implements AccountDao {
     @Override
     public void reset() throws AccountException {
         File dir = new File(ACCOUNTS_FOLDER);
-        for (File f : dir.listFiles()) {
-            f.delete();
+        if (dir.exists() && dir.isDirectory()) {
+            for (File f : dir.listFiles()) {
+                f.delete();
+            }
+            dir.delete();
         }
     }
 
@@ -276,6 +282,39 @@ public class FileAccountDaoImpl implements AccountDao {
             zip.write(buff, 0, bytes);
         }
         zip.closeEntry();
+    }
+
+    private static byte[] readByteArr(DataInputStream in ) throws IOException {
+        byte[] bytes = null;
+        final int len = in.readInt();
+
+        if (len > 0) {
+            bytes = new byte[len];
+            in.readFully(bytes);
+        }
+
+        return bytes;
+    }
+
+
+    public static void write(final OutputStream out, final Account acct)
+        throws AccountException {
+
+        try {
+            final DataOutputStream dos = new DataOutputStream(out);
+            dos.writeUTF(acct.getName());
+            writeByteArr(dos, acct.getPasswordHash());
+            dos.writeInt(acct.getBalance());
+            //...
+            dos.writeUTF(acct.getFullName());
+        } catch (final IOException e) {
+
+        }
+    }
+
+    private static void writeByteArr(DataOutputStream out, final byte[] bytes) {
+        //...final int len = (b == null) ? -1 : b.length;
+
     }
 
 
