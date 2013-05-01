@@ -284,7 +284,37 @@ public class FileAccountDaoImpl implements AccountDao {
         zip.closeEntry();
     }
 
-    private static byte[] readByteArr(DataInputStream in ) throws IOException {
+
+    /**
+     * Helper method to write out the Account in binary format
+     * @param out - the output stream to write data to
+     * @param acct - the account to write out
+     * @throws AccountException
+     */
+    private static void write(final OutputStream out, final Account acct)
+            throws AccountException {
+
+        try {
+            final DataOutputStream dos = new DataOutputStream(out);
+            dos.writeUTF(acct.getName());
+            dos.writeInt(acct.getBalance());
+            dos.writeUTF(acct.getFullName());
+            dos.writeUTF(acct.getPhone());
+            dos.writeUTF(acct.getEmail());
+            writeByteArray(dos, acct.getPasswordHash());
+        } catch (final IOException e) {
+
+        }
+    }
+
+
+    /**
+     * Read in a byte array for the password hash
+     * @param in - the data input stream
+     * @return - the byte array read from disc
+     * @throws IOException - if unable to read from file
+     */
+    private static byte[] readByteArray(DataInputStream in ) throws IOException {
         byte[] bytes = null;
         final int len = in.readInt();
 
@@ -297,24 +327,21 @@ public class FileAccountDaoImpl implements AccountDao {
     }
 
 
-    public static void write(final OutputStream out, final Account acct)
-        throws AccountException {
+    /**
+     * Write out the account's password hash as a byte array
+     * @param out - the output stream
+     * @param bytes - the password hash to write out
+     */
+    private static void writeByteArray(DataOutputStream out, final byte[] bytes) {
+        final int len = (bytes == null) ? -1 : bytes.length;
 
-        try {
-            final DataOutputStream dos = new DataOutputStream(out);
-            dos.writeUTF(acct.getName());
-            writeByteArr(dos, acct.getPasswordHash());
-            dos.writeInt(acct.getBalance());
-            //...
-            dos.writeUTF(acct.getFullName());
-        } catch (final IOException e) {
-
+        for (int i = 0; i < len; i++) {
+            try {
+                out.writeByte(bytes[i]);
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Unable to write bytes to out put stream", e);
+            }
         }
-    }
-
-    private static void writeByteArr(DataOutputStream out, final byte[] bytes) {
-        //...final int len = (b == null) ? -1 : b.length;
-
     }
 
 
